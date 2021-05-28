@@ -1,0 +1,11 @@
+{
+	"name": "zim",
+	"version": "1.0.0",
+	"description": "",
+	"main": "game.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"dev": "nodemon --exec go run main.go --signal SIGTERM"
+	},
+	"author": "bokoness"
+}
