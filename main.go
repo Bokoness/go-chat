@@ -18,9 +18,15 @@ func main() {
 	server := socketio.NewServer(nil)
 
 	server.OnConnect("/", func(s socketio.Conn) error {
+		fmt.Println(s.RemoteHeader())
+		sa := s.RemoteHeader().Get("Cookie")
+		fmt.Println(sa)
+
 		s.SetContext("")
+
 		fmt.Println("connected:", s.ID())
 		server.JoinRoom("/", "chatRoom", s)
+		server.JoinRoom("/", "typing", s)
 		return nil
 	})
 
@@ -28,7 +34,14 @@ func main() {
 	server.OnEvent("/", "msg", func(s socketio.Conn, msg string) {
 		usrMsg := msgToJson(msg)
 		server.BroadcastToRoom("/", "chatRoom", "msg", usrMsg)
-		log.Println("Message recived from client: " + usrMsg.Message)
+	})
+
+	//this event shows all connection that user is typing, exept the typing user himself
+	server.OnEvent("/", "typing", func(s socketio.Conn, usr string) {
+		s.Leave("typing")
+		server.BroadcastToRoom("/", "typing", "typing", usr)
+		log.Printf("%s is typing", usr)
+		s.Join("typing")
 	})
 
 	server.OnError("/", func(s socketio.Conn, e error) {
@@ -39,6 +52,7 @@ func main() {
 		fmt.Println("closed", reason)
 	})
 
+	//handling all sockets in differnt channels
 	go server.Serve()
 	defer server.Close()
 
