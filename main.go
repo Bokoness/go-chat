@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/go-redis/redis"
 	socketio "github.com/googollee/go-socket.io"
 )
 
@@ -15,23 +17,30 @@ type UserMessage struct {
 }
 
 func main() {
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	pong, err := client.Ping().Result()
+	fmt.Println(pong, err)
+
 	server := socketio.NewServer(nil)
 
 	server.OnConnect("/", func(s socketio.Conn) error {
-		fmt.Println(s.RemoteHeader())
-		sa := s.RemoteHeader().Get("Cookie")
-		fmt.Println(sa)
-
-		s.SetContext("")
-
 		fmt.Println("connected:", s.ID())
 		server.JoinRoom("/", "chatRoom", s)
 		server.JoinRoom("/", "typing", s)
+
+		server.Adapter(&socketio.RedisAdapterOptions{})
 		return nil
 	})
-
 	//this handles the recive message event
 	server.OnEvent("/", "msg", func(s socketio.Conn, msg string) {
+		client.RPush("chatRoom", msg)
+		b := client.Expire("chatRoom", time.Duration(time.Hour*2))
+		fmt.Println(b)
 		usrMsg := msgToJson(msg)
 		server.BroadcastToRoom("/", "chatRoom", "msg", usrMsg)
 	})
@@ -40,7 +49,6 @@ func main() {
 	server.OnEvent("/", "typing", func(s socketio.Conn, usr string) {
 		s.Leave("typing")
 		server.BroadcastToRoom("/", "typing", "typing", usr)
-		log.Printf("%s is typing", usr)
 		s.Join("typing")
 	})
 
@@ -59,7 +67,12 @@ func main() {
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/", fs)
 
+	http.HandleFunc("/auth/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("This func should handle the authentication of the socket"))
+	})
+
 	http.Handle("/socket.io/", server)
+
 	p := 8000
 	log.Printf("Serving at localhost:%d", p)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", p), nil))

@@ -1,8 +1,8 @@
-const socket = io({
-	auth: {
-		token: "abc",
-	},
-});
+// axios.post("/auth/", "assda").then(res => {
+// 	console.log(res);
+// });
+
+const socket = io("/");
 
 let btn = document.querySelector("#btn");
 let usr = document.querySelector("#usr");
