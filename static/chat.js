@@ -1,14 +1,26 @@
-// axios.post("/auth/", "assda").then(res => {
-// 	console.log(res);
-// });
-
 const socket = io("/");
+
+const t = {
+	nsp: "ness",
+	auth: "authtoken",
+	isAdmin: true,
+};
 
 let btn = document.querySelector("#btn");
 let usr = document.querySelector("#usr");
 let usrMsg = document.querySelector("#usrMsg");
 let board = document.querySelector("#board");
 let typing = document.querySelector("#typing");
+let login = document.querySelector("#login");
+
+const loadChatData = data => {
+	if (!data) return;
+	board.innerHTML = "";
+	data.forEach(val => {
+		const msg = JSON.parse(val);
+		board.innerHTML += `<p><strong>${msg.name} :</strong>${msg.message}</p>`;
+	});
+};
 
 const postMsg = () => {
 	let data = { name: usr.value, message: usrMsg.value };
@@ -30,6 +42,7 @@ const postTyping = () => {
 };
 
 btn.addEventListener("click", postMsg);
+
 usrMsg.addEventListener("keyup", e => {
 	if (e.keyCode === 13) {
 		e.preventDefault();
@@ -39,5 +52,10 @@ usrMsg.addEventListener("keyup", e => {
 	}
 });
 
+login.addEventListener("click", () => {
+	socket.emit("setRoom", JSON.stringify(t));
+});
+
+socket.on("chatData", data => loadChatData(data));
 socket.on("msg", data => apeendMsgToScreen(data));
 socket.on("typing", data => appendTypingToScreen(data));

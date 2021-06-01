@@ -16,33 +16,48 @@ type UserMessage struct {
 	Message string `json:"message"`
 }
 
+type Token struct {
+	Nsp     string `json:"nsp"`
+	Auth    string `json:"auth"`
+	IsAdmin bool   `json:"isAdmin"`
+}
+
 func main() {
-	client := redis.NewClient(&redis.Options{
+	red := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
 		DB:       0,
 	})
 
-	pong, err := client.Ping().Result()
-	fmt.Println(pong, err)
-
 	server := socketio.NewServer(nil)
-
 	server.OnConnect("/", func(s socketio.Conn) error {
-		fmt.Println("connected:", s.ID())
+		fmt.Println("joined")
+		server.JoinRoom("/", "setRoom", s)
 		server.JoinRoom("/", "chatRoom", s)
 		server.JoinRoom("/", "typing", s)
 
-		server.Adapter(&socketio.RedisAdapterOptions{})
+		// chatData, _ := red.LRange("chatRoom", 0, red.LLen("chatRoom").Val()).Result()
+		// server.BroadcastToRoom("/", "chatRoom", "chatData", chatData)
 		return nil
 	})
+
+	server.OnEvent("/", "setRoom", func(s socketio.Conn, d string) {
+		s.SetContext(d)
+		t := getToken(s)
+		fmt.Println(t)
+		server.JoinRoom("/", fmt.Sprintf("%s/chatRoom", "asd"), s)
+		server.JoinRoom("/", fmt.Sprintf("%s/typing", "asd"), s)
+		server.LeaveRoom("/", "setRoom", s)
+	})
+
 	//this handles the recive message event
 	server.OnEvent("/", "msg", func(s socketio.Conn, msg string) {
-		client.RPush("chatRoom", msg)
-		b := client.Expire("chatRoom", time.Duration(time.Hour*2))
-		fmt.Println(b)
+		t := s.Context()
+		fmt.Println(t)
 		usrMsg := msgToJson(msg)
-		server.BroadcastToRoom("/", "chatRoom", "msg", usrMsg)
+		red.RPush("chatRoom", msg)
+		red.Expire("chatRoom", time.Duration(time.Hour*2))
+		server.BroadcastToRoom("/", fmt.Sprintf("%s/typing"), "msg", usrMsg)
 	})
 
 	//this event shows all connection that user is typing, exept the typing user himself
@@ -57,7 +72,7 @@ func main() {
 	})
 
 	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
-		fmt.Println("closed", reason)
+		fmt.Println("closed", reason, s.Namespace())
 	})
 
 	//handling all sockets in differnt channels
@@ -67,8 +82,15 @@ func main() {
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/", fs)
 
+	//this route will give cookies to user
 	http.HandleFunc("/auth/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("This func should handle the authentication of the socket"))
+		fmt.Println("giving cookies")
+		// var t Token
+		// _ = json.NewDecoder(r.Body).Decode(&t)
+		// c := http.Cookie{Name: "nsp", Value: t.Nsp, Path: "/"}
+		// http.SetCookie(w, &c)
+		// w.WriteHeader(200)
+		w.Write([]byte("Good"))
 	})
 
 	http.Handle("/socket.io/", server)
@@ -82,4 +104,16 @@ func msgToJson(msg string) UserMessage {
 	var usrMsg UserMessage
 	json.Unmarshal([]byte(msg), &usrMsg)
 	return usrMsg
+}
+
+func getToken(s socketio.Conn) string {
+	ctx := s.Context()
+	f, e := ctx.(Token)
+	fmt.Println(f, e)
+	// var t Token
+	// e := json.Unmarshal([]byte(d), &t)
+	// if e != nil {
+	// 	fmt.Println(e)
+	// }
+	return "hey"
 }
