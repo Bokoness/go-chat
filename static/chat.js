@@ -3,8 +3,9 @@ const socket = io("/");
 const t = {
 	nsp: "ness",
 	auth: "authtoken",
-	isAdmin: true,
+	isAdmin: "true",
 };
+// socket.emit("setRoom", JSON.stringify(t));
 
 let btn = document.querySelector("#btn");
 let usr = document.querySelector("#usr");
