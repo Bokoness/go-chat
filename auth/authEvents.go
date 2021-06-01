@@ -24,7 +24,6 @@ func (v Values) Get(key string) string {
 }
 
 func CreateAuthEvents(server *socketio.Server) {
-	red := rdb.CreateCon()
 	server.OnEvent("/", "auth", func(s socketio.Conn, d string) {
 		s.SetContext(d)
 		arr := map[string]string{}
@@ -38,7 +37,7 @@ func CreateAuthEvents(server *socketio.Server) {
 		nsp := GetToken(s, "nsp")
 		server.JoinRoom("/", fmt.Sprintf("%s/chatRoom", nsp), s)
 		server.JoinRoom("/", fmt.Sprintf("%s/typing", nsp), s)
-		chatData, _ := red.LRange("chatRoom", 0, red.LLen("chatRoom").Val()).Result()
+		chatData, _ := rdb.Client.LRange("chatRoom", 0, rdb.Client.LLen("chatRoom").Val()).Result()
 		room := fmt.Sprintf("%s/chatRoom", nsp)
 		server.BroadcastToRoom("/", room, "chatData", chatData)
 		server.LeaveRoom("/", "setRoom", s)
@@ -59,7 +58,7 @@ func SetCtx(s socketio.Conn, t string) {
 func GetToken(s socketio.Conn, v string) string {
 	ctx := s.Context()
 	c1 := context.Background()
-	c2 := context.WithValue(c1, "token", ctx)
-	c3 := c2.Value("token").(Values).Get(v)
+	c2 := context.WithValue(c1, "t", ctx)
+	c3 := c2.Value("t").(Values).Get(v)
 	return c3
 }

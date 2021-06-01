@@ -7,12 +7,13 @@ import (
 
 	"github.com/bokoness/go-chat/auth"
 	"github.com/bokoness/go-chat/chat"
+	"github.com/bokoness/go-chat/rdb"
 	socketio "github.com/googollee/go-socket.io"
 )
 
 func main() {
+	rdb.CreateCon()
 	server := socketio.NewServer(nil)
-
 	auth.CreateAuthEvents(server)
 	chat.CreateChatEvents(server)
 

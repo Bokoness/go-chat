@@ -16,12 +16,11 @@ type UserMessage struct {
 }
 
 func CreateChatEvents(server *socketio.Server) {
-	red := rdb.CreateCon()
 	server.OnEvent("/", "msg", func(s socketio.Conn, msg string) {
 		nsp := auth.GetToken(s, "nsp")
 		usrMsg := MsgToJson(msg)
-		red.RPush("chatRoom", msg)
-		red.Expire("chatRoom", time.Duration(time.Hour*2))
+		rdb.Client.RPush("chatRoom", msg)
+		rdb.Client.Expire("chatRoom", time.Duration(time.Hour*2))
 		room := fmt.Sprintf("%s/chatRoom", nsp)
 		server.BroadcastToRoom("/", room, "msg", usrMsg)
 	})
