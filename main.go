@@ -39,7 +39,7 @@ func main() {
 	http.Handle("/", fs)
 	http.Handle("/socket.io/", server)
 
-	p := 8000
+	p := 8001
 	log.Printf("Serving at localhost:%d", p)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", p), nil))
 }

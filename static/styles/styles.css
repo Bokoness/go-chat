@@ -1,0 +1,24 @@
+:root {
+	--purple: #575ed8;
+	--purple-light: #8d91ee98;
+}
+
+.center {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+input {
+	width: 400px;
+	height: 50px;
+}
+
+button {
+	height: 50px;
+	width: 100px;
+	margin-top: 15px;
+	margin-bottom: 15px;
+	border-radius: 10px;
+}

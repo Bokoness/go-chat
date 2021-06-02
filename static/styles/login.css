@@ -1,0 +1,15 @@
+body {
+	height: 100vh;
+	font-size: 1.3em;
+	background-color: var(--purple-light);
+}
+
+#loginPage {
+	width: 1400px !important;
+}
+
+#loginPage > #adminName {
+}
+
+#loginPage > #token {
+}

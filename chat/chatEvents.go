@@ -19,9 +19,9 @@ func CreateChatEvents(server *socketio.Server) {
 	server.OnEvent("/", "msg", func(s socketio.Conn, msg string) {
 		nsp := auth.GetToken(s, "nsp")
 		usrMsg := MsgToJson(msg)
-		rdb.Client.RPush("chatRoom", msg)
-		rdb.Client.Expire("chatRoom", time.Duration(time.Hour*2))
 		room := fmt.Sprintf("%s/chatRoom", nsp)
+		rdb.Client.RPush(room, msg)
+		rdb.Client.Expire(room, time.Duration(time.Hour*2))
 		server.BroadcastToRoom("/", room, "msg", usrMsg)
 	})
 

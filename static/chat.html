@@ -11,21 +11,23 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"
 		integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ=="
 		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	<link href="/styles/styles.css" rel="stylesheet" />
-	<link href="/styles/login.css" rel="stylesheet" />
-	<title>Go WebSocket Login</title>
+	<link href="/styles/chat.css" rel="stylesheet" />
+	<title>Go WebSocket Tutorial</title>
 </head>
 
-<body class="center">
-	<div class="center" id="loginPage">
-		<h2>Open New Chat</h2>
-		<input type="text" id="adminName" placeholder="Your name" />
-		<input type="text" id="roomName" placeholder="Chat room name" />
-		<input type="text" id="token" placeholder="Your Token" />
+<body>
+	<div id="chat-app">
+		<button id="login">Login</button>
+		<h2>Go WebSocket</h2>
+		<div id="chat-window">
+			<div id="board"></div>
+			<div id="typing"></div>
+		</div>
+		<input type="text" id="usr" placeholder="userName" />
+		<input type="text" id="usrMsg" placeholder="message" />
 		<button id="btn">send</button>
 	</div>
-	<p id="err"></p>
-	<script src="/js/login.js"></script>
+	<script src="js/chat.js"></script>
 </body>
 
 </html>
