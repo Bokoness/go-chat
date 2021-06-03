@@ -12,15 +12,15 @@ import (
 )
 
 type Token struct {
-	Nsp     string `json:"nsp"`
+	Room    string `json:"room"`
 	Auth    string `json:"auth"`
 	IsAdmin bool   `json:"isAdmin"`
 }
 
 type AdminData struct {
-	Nsp   string `json:"nsp"`
-	Name  string `json:"name"`
-	Token string `json:"token"`
+	Room      string `json:"room"`
+	AdminName string `json:"adminName"`
+	Token     string `json:"token"`
 }
 
 type Values struct {
@@ -33,21 +33,27 @@ func (v Values) Get(key string) string {
 
 func CreateAuthEvents(server *socketio.Server) {
 	server.OnEvent("/", "auth", func(s socketio.Conn, d string) {
+		red := rdb.Client
 		s.SetContext(d)
 		arr := map[string]string{}
 		json.Unmarshal([]byte(d), &arr)
 		v := Values{map[string]string{
 			"auth":    arr["auth"],
 			"isAdmin": arr["isAdmin"],
-			"nsp":     arr["nsp"],
+			"room":    arr["room"],
 		}}
 		s.SetContext(v)
-		nsp := GetToken(s, "nsp")
-		chatRoom := fmt.Sprintf("%s/chatRoom", nsp)
-		server.JoinRoom("/", chatRoom, s)
-		server.JoinRoom("/", fmt.Sprintf("%s/typing", nsp), s)
-		chatData, _ := rdb.Client.LRange(chatRoom, 0, rdb.Client.LLen(chatRoom).Val()).Result()
-		server.BroadcastToRoom("/", chatRoom, "chatData", chatData)
+		room := GetToken(s, "room")
+		fmt.Println(red.HExists(room, "status").Val())
+		if red.HExists(room, "status").Val() {
+			status := red.HGet(room, "status").Val()
+			fmt.Println(status)
+			chatRoom := fmt.Sprintf("%s/chatRoom", room)
+			server.JoinRoom("/", chatRoom, s)
+			server.JoinRoom("/", fmt.Sprintf("%s/typing", room), s)
+			chatData, _ := rdb.Client.LRange(chatRoom, 0, rdb.Client.LLen(chatRoom).Val()).Result()
+			server.BroadcastToRoom("/", chatRoom, "chatData", chatData)
+		}
 		server.LeaveRoom("/", "setRoom", s)
 	})
 
@@ -59,17 +65,22 @@ func CreateAuthEvents(server *socketio.Server) {
 			http.Error(w, e.Error(), http.StatusBadRequest)
 			return
 		}
+		fmt.Println(b)
 		if !validateToken(b.Token) {
 			http.Error(w, e.Error(), http.StatusUnauthorized)
 			return
 		}
+		if red.HExists(b.Room, "status").Val() {
+			http.Error(w, "Room is taken", http.StatusUnauthorized)
+			return
+		}
 		// res := red.Set(b.Nsp, true, 2*time.Hour)
 		var m = make(map[string]interface{})
-		m["room"] = b.Nsp
-		m["admin"] = b.Name
+		m["name"] = b.Room
+		m["admin"] = b.Room
 		m["status"] = "waiting"
-		red.HMSet(b.Nsp, m)
-		red.Expire(b.Nsp, time.Duration(time.Hour*2))
+		red.HMSet(b.Room, m)
+		red.Expire(b.Room, time.Duration(time.Hour*2))
 		w.WriteHeader(200)
 	})
 }
@@ -80,7 +91,7 @@ func SetCtx(s socketio.Conn, t string) {
 	v := Values{map[string]string{
 		"auth":    arr["auth"],
 		"isAdmin": arr["isAdmin"],
-		"nsp":     arr["nsp"],
+		"room":    arr["room"],
 	}}
 	s.SetContext(v)
 }

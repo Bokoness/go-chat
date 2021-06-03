@@ -3,11 +3,14 @@
 	--purple-light: #8d91ee98;
 }
 
-.center {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
+body {
+	font-family: "Nunito";
+}
+
+h2 {
+	font-size: 18px;
+	padding: 10px 20px;
+	color: #575ed8;
 }
 
 input {
@@ -21,4 +24,17 @@ button {
 	margin-top: 15px;
 	margin-bottom: 15px;
 	border-radius: 10px;
+}
+
+label {
+	box-sizing: border-box;
+	display: block;
+	padding: 10px 20px;
+}
+
+.center {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
 }

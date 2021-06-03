@@ -12,23 +12,17 @@
 		integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ=="
 		crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	<link href="/styles/styles.css" rel="stylesheet" />
-	<link href="/styles/chat.css" rel="stylesheet" />
-	<title>Go WebSocket Tutorial</title>
+	<link href="/styles/waiting.css" rel="stylesheet" />
+	<title>Go WebSocket waiting</title>
 </head>
 
-<body>
-	<div id="chat-app">
-		<button id="login">Login</button>
-		<h2>Go WebSocket</h2>
-		<div id="chat-window">
-			<div id="board"></div>
-			<div id="typing"></div>
-		</div>
-		<input type="text" id="usr" placeholder="userName" />
-		<input type="text" id="usrMsg" placeholder="message" />
+<body class="center">
+	<div class="center" id="loginPage">
+		<h2>Waiting Room</h2>
 		<button id="btn">send</button>
 	</div>
-	<script src="js/chat.js"></script>
+	<p id="err"></p>
+	<script src="/js/waiting.js"></script>
 </body>
 
 </html>

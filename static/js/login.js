@@ -9,10 +9,21 @@ const checkToken = async () => {
 	let room = roomName.value;
 	let t = token.value;
 	if (!name || !t || !room) return invokeError("Please fill all fields");
-	let { status } = await axios.post("/auth", { name, token: t, nsp: room });
-	if (status === 200) {
-		localStorage.setItem("admin", JSON.stringify(t));
-		//go to waiting room
+	try {
+		let { status } = await axios.post("/auth", {
+			adminName: name,
+			token: t,
+			room: room,
+		});
+		if (status === 200) {
+			localStorage.setItem("adminName", name);
+			localStorage.setItem("room", room);
+			localStorage.setItem("token", t);
+			localStorage.setItem("isAdmin", true);
+			window.location = `/waiting?t=${t}`;
+		}
+	} catch (e) {
+		console.log(e.response);
 	}
 };
 

@@ -16,6 +16,7 @@ func main() {
 	server := socketio.NewServer(nil)
 	auth.CreateAuthEvents(server)
 	chat.CreateChatEvents(server)
+	chat.CreateWaitingEvents(server)
 
 	server.OnConnect("/", func(s socketio.Conn) error {
 		server.JoinRoom("/", "auth", s)
@@ -39,7 +40,7 @@ func main() {
 	http.Handle("/", fs)
 	http.Handle("/socket.io/", server)
 
-	p := 8001
+	p := 8000
 	log.Printf("Serving at localhost:%d", p)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", p), nil))
 }
