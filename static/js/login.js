@@ -20,7 +20,7 @@ const checkToken = async () => {
 			localStorage.setItem("room", room);
 			localStorage.setItem("token", t);
 			localStorage.setItem("isAdmin", true);
-			window.location = `/waiting?t=${t}`;
+			window.location = `/waiting?r=${room}&t=${t}`;
 		}
 	} catch (e) {
 		console.log(e.response);

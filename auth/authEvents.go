@@ -57,6 +57,21 @@ func CreateAuthEvents(server *socketio.Server) {
 		server.LeaveRoom("/", "setRoom", s)
 	})
 
+	server.OnEvent("/", "joinRoom", func(s socketio.Conn, data string) {
+		var d map[string]string
+		json.Unmarshal([]byte(data), &d)
+		red := rdb.Client
+		if !red.HExists(d["room"], "name").Val() {
+			fmt.Println("BAD")
+			server.LeaveRoom("/", "auth", s)
+			return
+		} else {
+			fmt.Println("GOOD")
+			s.Join(d["room"])
+			server.BroadcastToRoom("/", d["room"], "joined", d["name"])
+		}
+	})
+
 	http.HandleFunc("/auth", func(w http.ResponseWriter, r *http.Request) {
 		red := rdb.Client
 		var b AdminData
@@ -81,6 +96,7 @@ func CreateAuthEvents(server *socketio.Server) {
 		m["status"] = "waiting"
 		red.HMSet(b.Room, m)
 		red.Expire(b.Room, time.Duration(time.Hour*2))
+		// w.WriteHeader(200)
 		w.WriteHeader(200)
 	})
 }
