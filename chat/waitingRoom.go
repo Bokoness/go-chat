@@ -14,10 +14,18 @@ import (
 )
 
 func CreateWaitingEvents(server *socketio.Server) {
+	server.OnEvent("/", "getUsrs", func(s socketio.Conn, r string) {
+		room := fmt.Sprintf("%s/players", r)
+		usrs := rdb.Client.HGetAll(room).Val()
+		server.BroadcastToRoom("/", r, "getUsrs", usrs)
+	})
 	server.OnEvent("/", "joined", func(s socketio.Conn, name string) {
 		r := auth.GetToken(s, "room")
 		//check if room is open (nsp)
 		room := fmt.Sprintf("%s/waitingRoom", r)
+		if !rdb.Client.HExists(room, "name").Val() {
+			return
+		}
 		server.BroadcastToRoom("/", room, "join", name)
 	})
 
@@ -28,10 +36,9 @@ func CreateWaitingEvents(server *socketio.Server) {
 			return
 		}
 		room := keys[0]
-		// token := keys[1]
-		b := rdb.Client.HExists(room, "name").Val()
-		if !b {
-			http.Error(w, e.Error(), http.StatusUnauthorized)
+
+		if !rdb.Client.HExists(room, "name").Val() {
+			http.Error(w, "room not found", http.StatusUnauthorized)
 			return
 		}
 		dir, _ := os.Getwd()

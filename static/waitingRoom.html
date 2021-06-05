@@ -17,15 +17,21 @@
 </head>
 
 <body class="center">
-	<div id="admin" class="center"></div>
+	<div class="center">
+		<h2>Waiting Room</h2>
+	</div>
+	<div id="admin" class="center" style="display:none">
+		<h3 id="adminTitle"></h3>
+		<p>Click the link below to copy the link to dashboard and send it to chat memebers</p>
+		<input type="text" id="link" value="" />
+		<button id="start">Start Chat</button>
+	</div>
 	<div id="usr" class="center" style="display:none">
 		<input type="text" placeholder="Your name" id="usrName" />
 		<button id="usrBtn">Join Room</button>
 	</div>
-	<div class="center" id="waiting">
-		<h2>Waiting Room</h2>
-		<button id="btn">send</button>
-	</div>
+	<div id="waiting"></div>
+
 	<p id="err"></p>
 	<script src="/js/waiting.js"></script>
 </body>

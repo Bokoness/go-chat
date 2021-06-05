@@ -58,17 +58,22 @@ func CreateAuthEvents(server *socketio.Server) {
 	})
 
 	server.OnEvent("/", "joinRoom", func(s socketio.Conn, data string) {
-		var d map[string]string
-		json.Unmarshal([]byte(data), &d)
+		var r map[string]string
+		json.Unmarshal([]byte(data), &r)
 		red := rdb.Client
-		if !red.HExists(d["room"], "name").Val() {
+		if !red.HExists(r["room"], "name").Val() {
 			fmt.Println("BAD")
 			server.LeaveRoom("/", "auth", s)
 			return
 		} else {
-			fmt.Println("GOOD")
-			s.Join(d["room"])
-			server.BroadcastToRoom("/", d["room"], "joined", d["name"])
+			//add user to room users list
+			uCol := r["room"] + "/players"
+			red.HSet(uCol, string(s.ID()), r["name"])
+			usrs := red.HGetAll(uCol)
+			//add user to general users-rooms list
+			red.HSet("players-rooms", string(s.ID()), r["room"])
+			s.Join(r["room"])
+			server.BroadcastToRoom("/", r["room"], "joined", usrs.Val())
 		}
 	})
 

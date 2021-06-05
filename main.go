@@ -29,6 +29,12 @@ func main() {
 	})
 
 	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
+		room := rdb.Client.HGet("players-rooms", s.ID())
+		rdb.Client.HDel("players-rooms", s.ID())
+		rdb.Client.HDel(room.Val()+"/players", s.ID())
+		server.BroadcastToRoom("/", room.Val(), "left", s.ID())
+		//search exit user from room using redis
+		fmt.Println(s.Rooms())
 		fmt.Println("closed", reason, s.Namespace())
 	})
 
@@ -40,7 +46,7 @@ func main() {
 	http.Handle("/", fs)
 	http.Handle("/socket.io/", server)
 
-	p := 8000
+	p := 8001
 	log.Printf("Serving at localhost:%d", p)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", p), nil))
 }
